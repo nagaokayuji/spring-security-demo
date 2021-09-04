@@ -1,6 +1,8 @@
 package com.example.demo.security
 
-enum class ApplicationUserRole(permissions: Set<ApplicationUserPermission>) {
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+
+enum class ApplicationUserRole(private val permissions: Set<ApplicationUserPermission>) {
     STUDENT(setOf()),
     ADMIN(
         setOf(
@@ -16,4 +18,13 @@ enum class ApplicationUserRole(permissions: Set<ApplicationUserPermission>) {
             ApplicationUserPermission.STUDENT_READ
         )
     );
+
+    //    companion object {
+    fun getAuthorities(): Set<SimpleGrantedAuthority> {
+        val authorities = permissions.map { SimpleGrantedAuthority(it.permission) }.toMutableSet()
+        // role も追加しておく
+        authorities.add(SimpleGrantedAuthority("ROLE_" + this.name))
+        return authorities
+    }
 }
+
