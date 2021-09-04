@@ -18,6 +18,7 @@ class SecurityConfig(private val passwordEncoder: PasswordEncoder) : WebSecurity
     @Throws(Exception::class)
     override fun configure(http: HttpSecurity) {
         http
+            .csrf().disable()
             .authorizeRequests()
             .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
             .antMatchers("/api/**").hasRole(ApplicationUserRole.STUDENT.name)
@@ -41,21 +42,25 @@ class SecurityConfig(private val passwordEncoder: PasswordEncoder) : WebSecurity
         val student1 = User.builder()
             .username("student1")
             .password(passwordEncoder.encode("password"))
-            .roles(ApplicationUserRole.STUDENT.name)
+            .authorities(ApplicationUserRole.STUDENT.getAuthorities())
             .build()
         // ADMIN
         val admin1 = User.builder()
             .username("admin1")
             .password(passwordEncoder.encode("password"))
-            .roles(ApplicationUserRole.ADMIN.name)
+            .authorities(ApplicationUserRole.ADMIN.getAuthorities())
             .build()
         // ADMIN_TRAINEE
         val adminTrainee1 = User.builder()
             .username("adminTrainee1")
             .password(passwordEncoder.encode("password"))
-            .roles(ApplicationUserRole.ADMIN_TRAINEE.name)
+            .authorities(ApplicationUserRole.ADMIN_TRAINEE.getAuthorities())
             .build()
 
+
+//        println(student1.toString())
+//        println(admin1.toString())
+//        println(adminTrainee1.toString())
         return InMemoryUserDetailsManager(
             student1,
             admin1,
