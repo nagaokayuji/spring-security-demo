@@ -2,6 +2,7 @@ package com.example.demo.security
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
@@ -20,6 +21,14 @@ class SecurityConfig(private val passwordEncoder: PasswordEncoder) : WebSecurity
             .authorizeRequests()
             .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
             .antMatchers("/api/**").hasRole(ApplicationUserRole.STUDENT.name)
+            .antMatchers(HttpMethod.DELETE, "/management/api/**")
+            .hasAuthority(ApplicationUserPermission.COURSE_WRITE.permission)
+            .antMatchers(HttpMethod.POST, "/management/api/**")
+            .hasAuthority(ApplicationUserPermission.COURSE_WRITE.permission)
+            .antMatchers(HttpMethod.PUT, "/management/api/**")
+            .hasAuthority(ApplicationUserPermission.COURSE_WRITE.permission)
+            .antMatchers("/management/api/**")
+            .hasAnyRole(ApplicationUserRole.ADMIN.name, ApplicationUserRole.ADMIN_TRAINEE.name)
             .anyRequest()
             .authenticated()
             .and()
