@@ -26,12 +26,12 @@ class JwtTokenVerifier(
     ) {
         val authorizationHeader = request.getHeader(jwtConfig.getAuthorizationHeader())
 
-        if (authorizationHeader.isNullOrBlank() || !authorizationHeader.startsWith(jwtConfig.getTokenPrefix()!!)) {
+        if (authorizationHeader.isNullOrBlank() || !authorizationHeader.startsWith(jwtConfig.getTokenPrefix())) {
             filterChain.doFilter(request, response)
             return
         }
 
-        val token = authorizationHeader.replace(jwtConfig.getTokenPrefix()!!, "")
+        val token = authorizationHeader.replace(jwtConfig.getTokenPrefix(), "")
 
         try {
             val claimsJws = Jwts.parser()
