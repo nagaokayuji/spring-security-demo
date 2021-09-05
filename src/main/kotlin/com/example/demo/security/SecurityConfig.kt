@@ -34,9 +34,15 @@ class SecurityConfig(
             .sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
-            .addFilter(JwtUsernameAndPasswordAuthenticationFilter(authenticationManager(), jwtConfig, secretKey))
+            .addFilter(
+                JwtUsernameAndPasswordAuthenticationFilter(
+                    authenticationManager(),
+                    jwtConfig,
+                    secretKey
+                )
+            ) // default: POST /login
             .addFilterAfter(
-                JwtTokenVerifier(secretKey, jwtConfig), JwtUsernameAndPasswordAuthenticationFilter::class.java
+                JwtTokenVerifier(secretKey, jwtConfig), JwtUsernameAndPasswordAuthenticationFilter::class.java // 上記実行後
             )
             .authorizeRequests()
             .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
