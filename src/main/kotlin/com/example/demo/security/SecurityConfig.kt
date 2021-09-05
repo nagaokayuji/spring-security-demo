@@ -10,6 +10,8 @@ import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.provisioning.InMemoryUserDetailsManager
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher
+import java.util.concurrent.TimeUnit
 
 @Configuration
 @EnableWebSecurity
@@ -33,7 +35,30 @@ class SecurityConfig(private val passwordEncoder: PasswordEncoder) : WebSecurity
             .anyRequest()
             .authenticated()
             .and()
-            .httpBasic()
+            .formLogin()
+            .loginPage("/login")
+            .permitAll()
+            .defaultSuccessUrl("/courses", true)
+            .passwordParameter("password")
+            .usernameParameter("username")
+            .and()
+            .rememberMe()
+            .tokenValiditySeconds(TimeUnit.DAYS.toSeconds(1).toInt()) // 1 day
+            .key("hoge")
+            .rememberMeParameter("remember-me")
+            .and()
+            .logout()
+            .logoutUrl("/logout")
+            .logoutRequestMatcher(
+                AntPathRequestMatcher(
+                    "/logout",
+                    "GET"
+                )
+            )
+            .clearAuthentication(true)
+            .invalidateHttpSession(true)
+            .deleteCookies("JSESSIONID", "remember-me")
+            .logoutSuccessUrl("/login")
     }
 
     @Bean
@@ -57,10 +82,6 @@ class SecurityConfig(private val passwordEncoder: PasswordEncoder) : WebSecurity
             .authorities(ApplicationUserRole.ADMIN_TRAINEE.getAuthorities())
             .build()
 
-
-//        println(student1.toString())
-//        println(admin1.toString())
-//        println(adminTrainee1.toString())
         return InMemoryUserDetailsManager(
             student1,
             admin1,
