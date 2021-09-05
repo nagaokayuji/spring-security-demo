@@ -1,21 +1,26 @@
 package com.example.demo.security
 
+import com.example.demo.auth.ApplicationUserService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
-import org.springframework.security.core.userdetails.User
-import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.security.provisioning.InMemoryUserDetailsManager
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 import java.util.concurrent.TimeUnit
 
 @Configuration
 @EnableWebSecurity
-class SecurityConfig(private val passwordEncoder: PasswordEncoder) : WebSecurityConfigurerAdapter() {
+@EnableGlobalMethodSecurity(prePostEnabled = true)
+class SecurityConfig(
+    private val passwordEncoder: PasswordEncoder,
+    private val applicationUserService: ApplicationUserService
+) : WebSecurityConfigurerAdapter() {
 
     @Throws(Exception::class)
     override fun configure(http: HttpSecurity) {
@@ -45,6 +50,7 @@ class SecurityConfig(private val passwordEncoder: PasswordEncoder) : WebSecurity
             .rememberMe()
             .tokenValiditySeconds(TimeUnit.DAYS.toSeconds(1).toInt()) // 1 day
             .key("hoge")
+            .userDetailsService(applicationUserService) // これがないと動かない？
             .rememberMeParameter("remember-me")
             .and()
             .logout()
@@ -61,31 +67,16 @@ class SecurityConfig(private val passwordEncoder: PasswordEncoder) : WebSecurity
             .logoutSuccessUrl("/login")
     }
 
-    @Bean
-    override fun userDetailsService(): UserDetailsService {
-        // STUDENT
-        val student1 = User.builder()
-            .username("student1")
-            .password(passwordEncoder.encode("password"))
-            .authorities(ApplicationUserRole.STUDENT.getAuthorities())
-            .build()
-        // ADMIN
-        val admin1 = User.builder()
-            .username("admin1")
-            .password(passwordEncoder.encode("password"))
-            .authorities(ApplicationUserRole.ADMIN.getAuthorities())
-            .build()
-        // ADMIN_TRAINEE
-        val adminTrainee1 = User.builder()
-            .username("adminTrainee1")
-            .password(passwordEncoder.encode("password"))
-            .authorities(ApplicationUserRole.ADMIN_TRAINEE.getAuthorities())
-            .build()
+    @Throws(Exception::class)
+    override fun configure(auth: AuthenticationManagerBuilder) {
+        auth.authenticationProvider(daoAuthenticationProvider())
+    }
 
-        return InMemoryUserDetailsManager(
-            student1,
-            admin1,
-            adminTrainee1
-        )
+    @Bean
+    fun daoAuthenticationProvider(): DaoAuthenticationProvider {
+        val provider = DaoAuthenticationProvider()
+        provider.setPasswordEncoder(passwordEncoder)
+        provider.setUserDetailsService(applicationUserService)
+        return provider
     }
 }
