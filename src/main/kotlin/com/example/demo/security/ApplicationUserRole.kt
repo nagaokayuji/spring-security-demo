@@ -20,7 +20,7 @@ enum class ApplicationUserRole(private val permissions: Set<ApplicationUserPermi
     );
 
     //    companion object {
-    fun getAuthorities(): Set<SimpleGrantedAuthority> {
+    fun getAuthorities(): MutableSet<SimpleGrantedAuthority> {
         val authorities = permissions.map { SimpleGrantedAuthority(it.permission) }.toMutableSet()
         // role も追加しておく
         authorities.add(SimpleGrantedAuthority("ROLE_" + this.name))
