@@ -53,7 +53,7 @@ class JwtUsernameAndPasswordAuthenticationFilter(
             .setSubject(authResult!!.name) // subject
             .claim("authorities", authResult.authorities) // body
             .setIssuedAt(java.util.Date())
-            .setExpiration(Date.valueOf(LocalDate.now().plusDays(jwtConfig.getTokenExpirationAfterDays()!!.toLong())))
+            .setExpiration(Date.valueOf(LocalDate.now().plusDays(jwtConfig.getTokenExpirationAfterDays().toLong())))
             .signWith(secretKey) // 署名
             .compact()
         // header に追加
